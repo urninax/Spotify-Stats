@@ -1,7 +1,7 @@
 package me.urninax.spotifystats.security.services;
 
 import lombok.Getter;
-import me.urninax.spotifystats.models.User;
+import me.urninax.spotifystats.security.models.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

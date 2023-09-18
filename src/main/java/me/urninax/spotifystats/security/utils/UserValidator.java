@@ -1,7 +1,7 @@
-package me.urninax.spotifystats.utils;
+package me.urninax.spotifystats.security.utils;
 
-import me.urninax.spotifystats.models.User;
-import me.urninax.spotifystats.services.UserService;
+import me.urninax.spotifystats.security.models.User;
+import me.urninax.spotifystats.security.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;

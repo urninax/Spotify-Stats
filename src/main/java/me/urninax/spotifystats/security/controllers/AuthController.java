@@ -1,21 +1,18 @@
-package me.urninax.spotifystats.controllers;
+package me.urninax.spotifystats.security.controllers;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import me.urninax.spotifystats.dto.SigninDTO;
-import me.urninax.spotifystats.dto.SignupDTO;
-import me.urninax.spotifystats.models.User;
+import me.urninax.spotifystats.security.dto.SigninDTO;
+import me.urninax.spotifystats.security.dto.SignupDTO;
+import me.urninax.spotifystats.security.models.User;
 import me.urninax.spotifystats.security.services.RegistrationService;
-import me.urninax.spotifystats.security.services.UserDetailsServiceImpl;
-import me.urninax.spotifystats.services.UserService;
-import me.urninax.spotifystats.utils.UserValidator;
-import me.urninax.spotifystats.utils.responses.UserErrorResponse;
+import me.urninax.spotifystats.security.utils.UserValidator;
+import me.urninax.spotifystats.security.utils.responses.UserErrorResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;

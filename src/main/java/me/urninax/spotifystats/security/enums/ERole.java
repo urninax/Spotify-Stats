@@ -1,4 +1,4 @@
-package me.urninax.spotifystats.enums;
+package me.urninax.spotifystats.security.enums;
 
 public enum ERole{
     ROLE_USER,

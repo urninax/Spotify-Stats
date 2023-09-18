@@ -1,6 +1,6 @@
-package me.urninax.spotifystats.repositories;
+package me.urninax.spotifystats.security.repositories;
 
-import me.urninax.spotifystats.models.User;
+import me.urninax.spotifystats.security.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

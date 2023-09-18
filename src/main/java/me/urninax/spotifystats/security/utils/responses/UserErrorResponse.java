@@ -1,4 +1,4 @@
-package me.urninax.spotifystats.utils.responses;
+package me.urninax.spotifystats.security.utils.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
