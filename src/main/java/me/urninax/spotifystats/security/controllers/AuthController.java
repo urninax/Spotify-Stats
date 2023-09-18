@@ -3,9 +3,14 @@ package me.urninax.spotifystats.security.controllers;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import me.urninax.spotifystats.security.dto.SigninDTO;
+import me.urninax.spotifystats.security.dto.SigninResponseDTO;
 import me.urninax.spotifystats.security.dto.SignupDTO;
+import me.urninax.spotifystats.security.models.RefreshToken;
 import me.urninax.spotifystats.security.models.User;
+import me.urninax.spotifystats.security.services.RefreshTokenService;
 import me.urninax.spotifystats.security.services.RegistrationService;
+import me.urninax.spotifystats.security.services.UserDetailsImpl;
+import me.urninax.spotifystats.security.utils.JWTUtil;
 import me.urninax.spotifystats.security.utils.UserValidator;
 import me.urninax.spotifystats.security.utils.responses.UserErrorResponse;
 import org.modelmapper.ModelMapper;
@@ -13,13 +18,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +35,8 @@ public class AuthController{
     private final UserValidator userValidator;
     private final ModelMapper modelMapper;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
+    private final JWTUtil jwtUtil;
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody @Valid SignupDTO signupDTO,
@@ -70,13 +75,26 @@ public class AuthController{
                 signinDTO.getUsername(), signinDTO.getPassword()
         );
 
+        Authentication authentication;
+
         try{
-            authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+            authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
         }catch(AuthenticationException e){
             UserErrorResponse userErrorResponse = new UserErrorResponse("Invalid credentials", LocalDateTime.now());
             return new ResponseEntity<>(userErrorResponse, HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.ok(HttpStatus.OK); // TODO: implement jwtToken
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        RefreshToken refreshToken = refreshTokenService.createToken(userDetails.getUser().getId()); //if returns null -> implement user service
+
+
+        SigninResponseDTO signinResponseDTO = new SigninResponseDTO(
+                userDetails.getUsername(),
+                refreshToken.getToken(),
+                jwtUtil.generateToken(userDetails.getUsername()),
+                "Bearer"
+        );
+        return new ResponseEntity<>(signinResponseDTO, HttpStatus.OK);
     }
 
     public User convertToUser(SignupDTO signupDTO){
