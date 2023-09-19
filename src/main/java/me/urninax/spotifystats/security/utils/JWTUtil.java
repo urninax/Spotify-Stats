@@ -20,10 +20,7 @@ public class JWTUtil{
     private String secret;
 
     @Value("${jwtExpirationMs}")
-    private long expirationMs;
-
-    @Value("${jwtRefreshExpirationMs}")
-    private long refreshExpirationMs;
+    private Long expirationMs;
 
     public String generateToken(String username){
         Instant expirationDateTime = Instant.now().plus(expirationMs, ChronoUnit.MILLIS);

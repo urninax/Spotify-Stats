@@ -6,10 +6,15 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 public class SigninResponseDTO{
     public String username;
     public String refreshToken;
     public String accessToken;
-    public String tokenType;
+    public String tokenType = "Bearer";
+
+    public SigninResponseDTO(String username, String refreshToken, String accessToken){
+        this.username = username;
+        this.refreshToken = refreshToken;
+        this.accessToken = accessToken;
+    }
 }
