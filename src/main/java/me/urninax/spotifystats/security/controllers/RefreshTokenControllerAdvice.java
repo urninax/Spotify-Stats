@@ -24,7 +24,8 @@ public class RefreshTokenControllerAdvice{
                 HttpStatus.FORBIDDEN.value(),
                 Instant.now(),
                 exc.getMessage(),
-                request.getContextPath()); // substring output if appears not so as intended
+                request.getDescription(false).substring(4)
+        );
     }
 
     @ExceptionHandler({ RefreshTokenNotFoundException.class })
@@ -34,7 +35,7 @@ public class RefreshTokenControllerAdvice{
                 HttpStatus.NOT_FOUND.value(),
                 Instant.now(),
                 exc.getMessage(),
-                request.getContextPath() // substring output if appears not so as intended
+                request.getDescription(false).substring(4)
         );
     }
 }

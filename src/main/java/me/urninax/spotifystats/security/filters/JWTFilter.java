@@ -9,12 +9,17 @@ import lombok.AllArgsConstructor;
 import me.urninax.spotifystats.security.services.UserDetailsServiceImpl;
 import me.urninax.spotifystats.security.utils.JWTUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.core.GrantedAuthorityDefaults;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 @Component
 @AllArgsConstructor
@@ -38,7 +43,9 @@ public class JWTFilter extends OncePerRequestFilter{
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails.getPassword(), userDetails.getAuthorities()
+                            userDetails,
+                            userDetails.getPassword(),
+                            userDetails.getAuthorities()
                     );
 
                     if(SecurityContextHolder.getContext().getAuthentication() == null){

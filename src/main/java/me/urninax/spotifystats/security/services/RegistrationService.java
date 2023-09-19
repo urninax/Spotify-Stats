@@ -16,10 +16,12 @@ public class RegistrationService{
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public void register(User user){
+    public User register(User user){
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(ERole.ROLE_USER);
 
         userRepository.save(user);
+
+        return user;
     }
 }

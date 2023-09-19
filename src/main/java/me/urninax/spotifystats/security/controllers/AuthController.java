@@ -4,9 +4,7 @@ import jakarta.validation.Valid;
 import me.urninax.spotifystats.security.dto.*;
 import me.urninax.spotifystats.security.models.RefreshToken;
 import me.urninax.spotifystats.security.models.User;
-import me.urninax.spotifystats.security.services.RefreshTokenService;
-import me.urninax.spotifystats.security.services.RegistrationService;
-import me.urninax.spotifystats.security.services.UserDetailsImpl;
+import me.urninax.spotifystats.security.services.*;
 import me.urninax.spotifystats.security.utils.JWTUtil;
 import me.urninax.spotifystats.security.utils.UserValidator;
 import me.urninax.spotifystats.security.utils.exceptions.RefreshTokenExpiredException;
@@ -29,6 +27,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -39,6 +38,7 @@ public class AuthController{
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final JWTUtil jwtUtil;
+    private final UserService userService;
 
     @Value("${jwtExpirationMs}")
     private Long expirationMs;
@@ -48,7 +48,7 @@ public class AuthController{
                           ModelMapper modelMapper,
                           AuthenticationManager authenticationManager,
                           RefreshTokenService refreshTokenService,
-                          JWTUtil jwtUtil){
+                          JWTUtil jwtUtil, UserService userService){
 
         this.registrationService = registrationService;
         this.userValidator = userValidator;
@@ -56,6 +56,7 @@ public class AuthController{
         this.authenticationManager = authenticationManager;
         this.refreshTokenService = refreshTokenService;
         this.jwtUtil = jwtUtil;
+        this.userService = userService;
     }
 
     @PostMapping("/signup")
@@ -65,7 +66,7 @@ public class AuthController{
 
         userValidator.validate(user, bindingResult);
 
-        if(bindingResult.hasErrors()){
+        if(bindingResult.hasErrors()){ //validate body
             List<FieldError> errors = bindingResult.getFieldErrors();
 
             StringBuilder stringBuilder = new StringBuilder();
@@ -77,17 +78,20 @@ public class AuthController{
                         .append("; ");
             }
 
-            UserErrorResponse userErrorResponse = new UserErrorResponse(
+            UserErrorResponse userErrorResponse = new UserErrorResponse( //generate error response if something's wrong
                     stringBuilder.toString(),
                     LocalDateTime.now());
 
             return new ResponseEntity<>(userErrorResponse, HttpStatus.CONFLICT);
         }
 
-        registrationService.register(user);
+        User registeredUser = registrationService.register(user);
+
+        RefreshToken refreshToken = refreshTokenService.createToken(registeredUser); //create new refresh token with freshly registered user's id
 
         SignupResponseDTO signupResponseDTO = new SignupResponseDTO(
                 "User created",
+                refreshToken.getToken(),
                 Instant.now()
         );
 
@@ -95,7 +99,7 @@ public class AuthController{
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> signinUser(@RequestBody SigninDTO signinDTO){
+    public ResponseEntity<?> signinUser(@RequestBody SigninDTO signinDTO) throws RefreshTokenNotFoundException{
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                 signinDTO.getUsername(), signinDTO.getPassword()
         );
@@ -103,20 +107,31 @@ public class AuthController{
         Authentication authentication;
 
         try{
-            authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+            authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken); //authenticate user with username and password
         }catch(AuthenticationException e){
             UserErrorResponse userErrorResponse = new UserErrorResponse("Invalid credentials", LocalDateTime.now());
             return new ResponseEntity<>(userErrorResponse, HttpStatus.BAD_REQUEST);
         }
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        RefreshToken refreshToken = refreshTokenService.createToken(userDetails.getUser().getId()); //if returns null -> implement user service
 
+        User userFromPrincipal = userDetails.getUser();
+        RefreshToken currentRefreshToken = userFromPrincipal.getRefreshToken();
 
-        SigninResponseDTO signinResponseDTO = new SigninResponseDTO(
+        try{
+            refreshTokenService.verifyExpiration(currentRefreshToken.getToken()); //verify current user's refresh token expiry time
+        }catch(RefreshTokenExpiredException exc){
+            currentRefreshToken = refreshTokenService.updateToken(userFromPrincipal); //create new token if current is expired
+        }
+
+        String accessToken = jwtUtil.generateToken(userFromPrincipal.getUsername());
+
+        SigninResponseDTO signinResponseDTO = new SigninResponseDTO( //generate response with data
                 userDetails.getUsername(),
-                refreshToken.getToken(),
-                jwtUtil.generateToken(userDetails.getUsername())
+                currentRefreshToken.getToken(), //if token was expired -> shows new token
+                accessToken,
+                "Successfully signed in",
+                Instant.now()
         );
         return new ResponseEntity<>(signinResponseDTO, HttpStatus.OK);
     }
@@ -124,12 +139,13 @@ public class AuthController{
     @PostMapping("/refresh-access-token")
     public ResponseEntity<?> refreshAccessToken(@RequestBody @Valid RefreshTokenRequestDTO refreshTokenRequestDTO,
                                                 BindingResult bindingResult, WebRequest request) throws RefreshTokenExpiredException, RefreshTokenNotFoundException{
-        if(bindingResult.hasErrors()){
+
+        if(bindingResult.hasErrors()){ //validate body
             RefreshTokenErrorResponse response = new RefreshTokenErrorResponse(
                     HttpStatus.NO_CONTENT.value(),
                     Instant.now(),
                     bindingResult.getFieldErrors().get(0).getDefaultMessage(),
-                    request.getContextPath() // substring output if appears not so as intended
+                    request.getDescription(false).substring(4)
             );
 
             return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
@@ -137,12 +153,11 @@ public class AuthController{
 
         String requestRefreshToken = refreshTokenRequestDTO.getRefreshToken();
 
-        RefreshToken refreshToken = refreshTokenService.verifyExpiration(requestRefreshToken);
-        String accessToken = jwtUtil.generateToken(refreshToken.getUser().getUsername());
+        RefreshToken refreshToken = refreshTokenService.verifyExpiration(requestRefreshToken); //verify refresh token's expiry time from body
+        String accessToken = jwtUtil.generateToken(refreshToken.getUser().getUsername()); //generate new jwt-token from refresh token owner username
 
         Instant timestamp = Instant.now();
-
-        RefreshAccessTokenResponse response = new RefreshAccessTokenResponse(
+        RefreshAccessTokenResponse response = new RefreshAccessTokenResponse(  //generate response with data
                 accessToken,
                 timestamp,
                 timestamp.plusMillis(expirationMs)

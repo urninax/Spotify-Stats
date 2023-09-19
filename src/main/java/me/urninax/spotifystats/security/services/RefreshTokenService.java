@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,14 +33,37 @@ public class RefreshTokenService{
     }
 
     @Transactional
-    public RefreshToken createToken(Long id){
+    public RefreshToken createToken(User user){
         RefreshToken refreshToken = new RefreshToken();
 
-        userRepository.findById(id).ifPresent(refreshToken::setUser);
-        refreshToken.setExpiryTime(Instant.now().plusMillis(refreshExpirationMs));
-        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken = setRefreshTokenFields(refreshToken, user);
 
         refreshTokenRepository.save(refreshToken);
+
+        return refreshToken;
+    }
+
+    @Transactional
+    public RefreshToken updateToken(User user){
+        RefreshToken currentUserRefreshToken = user.getRefreshToken();
+        Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findById(currentUserRefreshToken.getId());
+
+        if(refreshTokenOptional.isPresent()){
+            RefreshToken refreshToken = refreshTokenOptional.get();
+
+            refreshToken.setId(currentUserRefreshToken.getId());
+
+            currentUserRefreshToken = setRefreshTokenFields(refreshToken, user);
+        }
+
+        return currentUserRefreshToken;
+    }
+
+    @Transactional
+    public RefreshToken setRefreshTokenFields(RefreshToken refreshToken, User user){ //return refresh token with new fields
+        refreshToken.setUser(user);
+        refreshToken.setExpiryTime(Instant.now().plusMillis(refreshExpirationMs));
+        refreshToken.setToken(UUID.randomUUID().toString());
 
         return refreshToken;
     }
@@ -64,5 +88,20 @@ public class RefreshTokenService{
 
     public Optional<RefreshToken> findByToken(String token){
         return refreshTokenRepository.findByToken(token);
+    }
+
+    @Transactional
+    public void deleteByUserId(Long id){
+        Optional<User> userOptional = userRepository.findById(id);
+
+        if(userOptional.isPresent()){
+            User user = userOptional.get();
+
+            RefreshToken refreshToken = user.getRefreshToken();
+
+            if(refreshToken != null){
+                refreshTokenRepository.delete(refreshToken);
+            }
+        }
     }
 }
