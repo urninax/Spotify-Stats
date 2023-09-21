@@ -58,7 +58,7 @@ public class SecurityConfig{
     }
 
     @Bean
-    public AuthVerifier stateVerifier(){
+    public AuthVerifier authVerifier(){
         return new AuthVerifier();
     }
 }
