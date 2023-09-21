@@ -27,7 +27,6 @@ import org.springframework.web.context.request.WebRequest;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
