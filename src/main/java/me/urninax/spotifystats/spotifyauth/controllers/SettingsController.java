@@ -1,11 +1,10 @@
 package me.urninax.spotifystats.spotifyauth.controllers;
 
 import lombok.AllArgsConstructor;
-import me.urninax.spotifystats.security.models.User;
 import me.urninax.spotifystats.security.services.UserDetailsImpl;
 import me.urninax.spotifystats.spotifyauth.utils.AuthLinkGeneration;
-import me.urninax.spotifystats.spotifyauth.responses.ConnectResponse;
-import me.urninax.spotifystats.spotifyauth.utils.UsernameProvider;
+import me.urninax.spotifystats.spotifyauth.app.responses.ConnectResponse;
+import me.urninax.spotifystats.spotifyauth.utils.providers.UsernameProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;

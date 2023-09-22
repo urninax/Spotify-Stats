@@ -1,26 +1,31 @@
 package me.urninax.spotifystats.spotifyauth.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import me.urninax.spotifystats.security.models.User;
 import me.urninax.spotifystats.security.services.UserService;
 import me.urninax.spotifystats.spotifyauth.dto.SpotifyCredentialsDTO;
 import me.urninax.spotifystats.spotifyauth.models.SpotifyCredentials;
-import me.urninax.spotifystats.spotifyauth.responses.CallbackResponse;
+import me.urninax.spotifystats.spotifyauth.spotifyserver.requests.AccessTokenRequest;
+import me.urninax.spotifystats.spotifyauth.app.responses.CallbackResponse;
 import me.urninax.spotifystats.spotifyauth.services.SpotifyCredentialsService;
 import me.urninax.spotifystats.spotifyauth.utils.AuthVerifier;
-import me.urninax.spotifystats.spotifyauth.utils.CallbackResponseProvider;
-import me.urninax.spotifystats.spotifyauth.utils.UsernameProvider;
+import me.urninax.spotifystats.spotifyauth.utils.providers.CallbackResponseProvider;
+import me.urninax.spotifystats.spotifyauth.utils.providers.UsernameProvider;
+import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.VerificationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Optional;
@@ -58,7 +63,7 @@ public class CallbackController{
     public void getCallback(@RequestParam(value = "code", required = false) String code,
                               @RequestParam(value = "error", required = false) String error,
                               @RequestParam(value = "state") String state,
-                              HttpServletResponse httpResponse) throws VerificationException{
+                              HttpServletResponse httpResponse) throws VerificationException, SpotifyServerErrorException, JsonProcessingException{
 
         authVerifier.verify(state, code, error); //verify all the fields from Spotify server
 
@@ -72,7 +77,7 @@ public class CallbackController{
         if(response.getBody() != null){
             spotifyCredentialsService.save(mapSpotifyCredentials(response.getBody(), Instant.now()));
         }else{
-            throw new VerificationException("Didn't receive a response from Spotify server.");
+            throw new SpotifyServerErrorException("Didn't receive a response from Spotify server.");
         }
 
         try{
@@ -97,7 +102,7 @@ public class CallbackController{
         return new ResponseEntity<>(callbackResponseProvider.getCallbackResponse(), HttpStatus.FORBIDDEN);
     }
 
-    public HttpEntity<?> generateAccessTokenRequestHttpEntity(String code){
+    public HttpEntity<?> generateAccessTokenRequestHttpEntity(String code) throws JsonProcessingException{
         String appCredentials = String.format("%s:%s", clientId, clientSecret);
         String encodedAppCredentials = Base64.getUrlEncoder().encodeToString(appCredentials.getBytes());
 

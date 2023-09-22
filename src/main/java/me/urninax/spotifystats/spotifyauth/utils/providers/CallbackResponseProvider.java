@@ -1,8 +1,8 @@
-package me.urninax.spotifystats.spotifyauth.utils;
+package me.urninax.spotifystats.spotifyauth.utils.providers;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.urninax.spotifystats.spotifyauth.responses.CallbackResponse;
+import me.urninax.spotifystats.spotifyauth.app.responses.CallbackResponse;
 import org.springframework.stereotype.Component;
 
 /*

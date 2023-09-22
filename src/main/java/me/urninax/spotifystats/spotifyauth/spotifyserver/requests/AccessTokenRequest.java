@@ -1,4 +1,4 @@
-package me.urninax.spotifystats.spotifyauth.requests;
+package me.urninax.spotifystats.spotifyauth.spotifyserver.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
