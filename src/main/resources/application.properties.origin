@@ -13,3 +13,4 @@ jwtRefreshExpirationMs=
 clientId=
 clientSecret=
 redirectUri=
+scope=

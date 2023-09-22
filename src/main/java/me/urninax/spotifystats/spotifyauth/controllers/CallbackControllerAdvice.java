@@ -2,8 +2,9 @@ package me.urninax.spotifystats.spotifyauth.controllers;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import me.urninax.spotifystats.spotifyauth.responses.CallbackResponse;
-import me.urninax.spotifystats.spotifyauth.utils.CallbackResponseProvider;
+import me.urninax.spotifystats.spotifyauth.app.responses.CallbackResponse;
+import me.urninax.spotifystats.spotifyauth.utils.providers.CallbackResponseProvider;
+import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.VerificationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -31,5 +32,10 @@ public class CallbackControllerAdvice{
         }catch(IOException e){
             throw new RuntimeException(e);
         }
+    }
+
+    @ExceptionHandler(SpotifyServerErrorException.class)
+    public CallbackResponse spotifyServerHandler(SpotifyServerErrorException exc){
+        return new CallbackResponse(exc.getMessage(), Instant.now());
     }
 }

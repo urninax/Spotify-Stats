@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import me.urninax.spotifystats.security.enums.ERole;
+import me.urninax.spotifystats.spotifyauth.models.SpotifyCredentials;
 
 @Entity
 @Table(name = "user", schema = "public")
@@ -38,4 +39,7 @@ public class User{
 
     @OneToOne(mappedBy = "user")
     private RefreshToken refreshToken;
+
+    @OneToOne(mappedBy = "user")
+    private SpotifyCredentials spotifyCredentials;
 }

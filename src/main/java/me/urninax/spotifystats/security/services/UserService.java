@@ -19,8 +19,7 @@ public class UserService{
     }
 
     public Optional<User> findByUsername(String username){
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        return optionalUser;
+        return userRepository.findByUsername(username);
     }
 
     public Optional<User> findByEmail(String email){

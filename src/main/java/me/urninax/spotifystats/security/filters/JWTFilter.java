@@ -1,6 +1,9 @@
 package me.urninax.spotifystats.security.filters;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,17 +12,12 @@ import lombok.AllArgsConstructor;
 import me.urninax.spotifystats.security.services.UserDetailsServiceImpl;
 import me.urninax.spotifystats.security.utils.JWTUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.core.GrantedAuthorityDefaults;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 
 @Component
 @AllArgsConstructor
@@ -33,11 +31,10 @@ public class JWTFilter extends OncePerRequestFilter{
 
         if(authHeader != null && !authHeader.isBlank() && authHeader.startsWith("Bearer")){
             String jwt = authHeader.substring(7);
-
-            if(jwt.isBlank()){
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid token in Authorization header");
-            }else{
-                try{
+            try{
+                if(jwt.isBlank()){
+                    throw new JWTVerificationException("Invalid JWT Token");
+                }else{
                     String username = jwtUtil.validateAndRetrieveClaim(jwt);
 
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -51,9 +48,10 @@ public class JWTFilter extends OncePerRequestFilter{
                     if(SecurityContextHolder.getContext().getAuthentication() == null){
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     }
-                }catch(JWTVerificationException e){
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT Token");
+
                 }
+            }catch(JWTVerificationException ignored){
+
             }
         }
 

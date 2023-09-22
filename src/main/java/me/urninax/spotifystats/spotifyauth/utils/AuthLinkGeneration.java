@@ -24,6 +24,9 @@ public class AuthLinkGeneration{
     @Value("${redirectUri}")
     private String redirectUri;
 
+    @Value("${scope}")
+    private String scope;
+
     @Autowired
     public AuthLinkGeneration(AuthVerifier authVerifier){
         this.authVerifier = authVerifier;
@@ -46,8 +49,6 @@ public class AuthLinkGeneration{
         String state = generateRandomString(16);
 
         authVerifier.setState(state); //set generated state to compare with received from spotify server
-
-        String scope = "user-read-playback-state user-read-currently-playing user-top-read user-read-recently-played"; //scopes
 
         Map<String, String> parameters = new HashMap<>();
 
