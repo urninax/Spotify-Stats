@@ -3,6 +3,7 @@ package me.urninax.spotifystats.configs;
 import lombok.AllArgsConstructor;
 import me.urninax.spotifystats.security.filters.JWTFilter;
 import me.urninax.spotifystats.security.services.UserDetailsServiceImpl;
+import me.urninax.spotifystats.security.utils.AuthEntryPoint;
 import me.urninax.spotifystats.spotifyauth.utils.AuthVerifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,15 +26,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig{
     private final UserDetailsServiceImpl userDetailsServiceImpl;
     private final JWTFilter jwtFilter;
+    private final AuthEntryPoint authEntryPoint;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
 
         http.csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(handling -> handling.authenticationEntryPoint(authEntryPoint))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/error").permitAll()
                         .requestMatchers("/api/callback/**").permitAll()
                         .anyRequest().authenticated());
 
