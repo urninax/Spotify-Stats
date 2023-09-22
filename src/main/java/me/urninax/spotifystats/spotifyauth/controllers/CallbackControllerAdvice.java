@@ -3,6 +3,7 @@ package me.urninax.spotifystats.spotifyauth.controllers;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import me.urninax.spotifystats.spotifyauth.app.responses.CallbackResponse;
+import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyNotConnectedException;
 import me.urninax.spotifystats.spotifyauth.utils.providers.CallbackResponseProvider;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.VerificationException;
@@ -36,6 +37,11 @@ public class CallbackControllerAdvice{
 
     @ExceptionHandler(SpotifyServerErrorException.class)
     public CallbackResponse spotifyServerHandler(SpotifyServerErrorException exc){
+        return new CallbackResponse(exc.getMessage(), Instant.now());
+    }
+
+    @ExceptionHandler(SpotifyNotConnectedException.class)
+    public CallbackResponse spotifyNotConnectedHandler(SpotifyNotConnectedException exc){
         return new CallbackResponse(exc.getMessage(), Instant.now());
     }
 }

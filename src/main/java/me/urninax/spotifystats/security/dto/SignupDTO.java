@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.engine.internal.ImmutableEntityEntry;
 
 @Getter
 @Setter
@@ -18,6 +19,7 @@ public class SignupDTO{
     private String username;
 
     @Email
+    @NotEmpty(message = "User email cannot be empty")
     private String email;
 
     private String password;

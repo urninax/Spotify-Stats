@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
@@ -85,9 +87,11 @@ public class SpotifyCredentialsService{
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.set("Authorization", String.format("Basic %s", encodedAppCredentials));
 
-        RefreshedAccessTokenRequest request = new RefreshedAccessTokenRequest(refreshToken);
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("grant_type", "refresh_token");
+        map.add("refresh_token", refreshToken);
 
-        HttpEntity<RefreshedAccessTokenRequest> httpEntity = new HttpEntity<>(request, headers);
+        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(map, headers);
 
         ResponseEntity<RefreshedAccessTokenDTO> response = restTemplate.exchange(
                 tokenLink, HttpMethod.POST, httpEntity, RefreshedAccessTokenDTO.class);
