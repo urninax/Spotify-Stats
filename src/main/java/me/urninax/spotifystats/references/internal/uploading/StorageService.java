@@ -1,5 +1,6 @@
 package me.urninax.spotifystats.references.internal.uploading;
 
+import me.urninax.spotifystats.security.models.User;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -9,7 +10,7 @@ import java.util.stream.Stream;
 public interface StorageService{
     void init();
 
-    void store(MultipartFile file);
+    void store(MultipartFile file, User user);
 
     Stream<Path> loadAll();
 
