@@ -60,7 +60,7 @@ public class AuthController{
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody @Valid SignupDTO signupDTO,
-                                          BindingResult bindingResult){
+                                          BindingResult bindingResult, WebRequest request){
         User user = convertToUser(signupDTO);
 
         userValidator.validate(user, bindingResult);
@@ -78,8 +78,9 @@ public class AuthController{
             }
 
             UserErrorResponse userErrorResponse = new UserErrorResponse( //generate error response if something's wrong
+                    Instant.now(),
                     stringBuilder.toString(),
-                    LocalDateTime.now());
+                    request.getDescription(false).substring(4));
 
             return new ResponseEntity<>(userErrorResponse, HttpStatus.CONFLICT);
         }
@@ -98,7 +99,7 @@ public class AuthController{
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> signinUser(@RequestBody SigninDTO signinDTO) throws RefreshTokenNotFoundException{
+    public ResponseEntity<?> signinUser(@RequestBody SigninDTO signinDTO, WebRequest request) throws RefreshTokenNotFoundException{
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                 signinDTO.getUsername(), signinDTO.getPassword()
         );
@@ -108,7 +109,7 @@ public class AuthController{
         try{
             authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken); //authenticate user with username and password
         }catch(AuthenticationException e){
-            UserErrorResponse userErrorResponse = new UserErrorResponse("Invalid credentials", LocalDateTime.now());
+            UserErrorResponse userErrorResponse = new UserErrorResponse(Instant.now(), "Invalid credentials", request.getDescription(false).substring(4));
             return new ResponseEntity<>(userErrorResponse, HttpStatus.BAD_REQUEST);
         }
 
@@ -141,7 +142,6 @@ public class AuthController{
 
         if(bindingResult.hasErrors()){ //validate body
             RefreshTokenErrorResponse response = new RefreshTokenErrorResponse(
-                    HttpStatus.NO_CONTENT.value(),
                     Instant.now(),
                     bindingResult.getFieldErrors().get(0).getDefaultMessage(),
                     request.getDescription(false).substring(4)

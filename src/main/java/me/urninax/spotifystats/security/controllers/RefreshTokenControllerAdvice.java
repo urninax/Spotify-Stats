@@ -21,7 +21,6 @@ public class RefreshTokenControllerAdvice{
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public RefreshTokenErrorResponse expiredHandler(RefreshTokenExpiredException exc, WebRequest request){
         return new RefreshTokenErrorResponse(
-                HttpStatus.FORBIDDEN.value(),
                 Instant.now(),
                 exc.getMessage(),
                 request.getDescription(false).substring(4)
@@ -32,7 +31,6 @@ public class RefreshTokenControllerAdvice{
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public RefreshTokenErrorResponse notFoundHandler(RefreshTokenNotFoundException exc, WebRequest request){
         return new RefreshTokenErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
                 Instant.now(),
                 exc.getMessage(),
                 request.getDescription(false).substring(4)

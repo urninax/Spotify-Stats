@@ -9,7 +9,6 @@ import java.time.Instant;
 @NoArgsConstructor
 public class UploadErrorResponse{
     private Instant timestamp;
-    private int status;
-    private String error;
+    private String message;
     private String path;
 }

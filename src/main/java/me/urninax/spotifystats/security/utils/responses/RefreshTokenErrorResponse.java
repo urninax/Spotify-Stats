@@ -10,7 +10,6 @@ import java.time.Instant;
 @Setter
 @AllArgsConstructor
 public class RefreshTokenErrorResponse{
-    private int statusCode;
     private Instant timestamp;
     private String message;
     private String path;
