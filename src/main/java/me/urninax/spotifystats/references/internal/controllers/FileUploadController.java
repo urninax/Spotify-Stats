@@ -2,7 +2,7 @@ package me.urninax.spotifystats.references.internal.controllers;
 
 import lombok.AllArgsConstructor;
 import me.urninax.spotifystats.references.internal.uploading.StorageService;
-import me.urninax.spotifystats.references.internal.uploading.UploadedResponse;
+import me.urninax.spotifystats.references.internal.uploading.responses.UploadedResponse;
 import me.urninax.spotifystats.security.services.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
