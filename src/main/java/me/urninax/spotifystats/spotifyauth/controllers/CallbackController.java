@@ -1,17 +1,15 @@
 package me.urninax.spotifystats.spotifyauth.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
+import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
 import me.urninax.spotifystats.security.models.User;
 import me.urninax.spotifystats.security.services.UserService;
 import me.urninax.spotifystats.spotifyauth.dto.SpotifyCredentialsDTO;
 import me.urninax.spotifystats.spotifyauth.models.SpotifyCredentials;
-import me.urninax.spotifystats.spotifyauth.spotifyserver.requests.AccessTokenRequest;
-import me.urninax.spotifystats.spotifyauth.app.responses.CallbackResponse;
 import me.urninax.spotifystats.spotifyauth.services.SpotifyCredentialsService;
 import me.urninax.spotifystats.spotifyauth.utils.AuthVerifier;
-import me.urninax.spotifystats.spotifyauth.utils.providers.CallbackResponseProvider;
+import me.urninax.spotifystats.spotifyauth.utils.providers.GlobalResponseProvider;
 import me.urninax.spotifystats.spotifyauth.utils.providers.UsernameProvider;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.VerificationException;
@@ -22,10 +20,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.WebRequest;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Optional;
@@ -34,7 +31,7 @@ import java.util.Optional;
 @RequestMapping("/api/callback")
 public class CallbackController{
     private final AuthVerifier authVerifier;
-    private final CallbackResponseProvider callbackResponseProvider;
+    private final GlobalResponseProvider globalResponseProvider;
     private final UserService userService;
     private final SpotifyCredentialsService spotifyCredentialsService;
     private final UsernameProvider usernameProvider; // should use UsernameProvider because Spotify callback doesn't save JWT Token in headers
@@ -51,9 +48,9 @@ public class CallbackController{
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Autowired
-    public CallbackController(AuthVerifier authVerifier, CallbackResponseProvider callbackResponseProvider, UserService userService, SpotifyCredentialsService spotifyCredentialsService, UsernameProvider usernameProvider){
+    public CallbackController(AuthVerifier authVerifier, GlobalResponseProvider globalResponseProvider, UserService userService, SpotifyCredentialsService spotifyCredentialsService, UsernameProvider usernameProvider){
         this.authVerifier = authVerifier;
-        this.callbackResponseProvider = callbackResponseProvider;
+        this.globalResponseProvider = globalResponseProvider;
         this.userService = userService;
         this.spotifyCredentialsService = spotifyCredentialsService;
         this.usernameProvider = usernameProvider;
@@ -88,18 +85,19 @@ public class CallbackController{
     }
 
     @RequestMapping("/successful") // user-friendly authorization response
-    public ResponseEntity<?> callbackSuccessful(){
-        CallbackResponse callbackResponse = new CallbackResponse(
+    public ResponseEntity<?> callbackSuccessful(WebRequest request){
+        GlobalResponse response = new GlobalResponse(
+                Instant.now(),
                 "Verification successful",
-                Instant.now()
+                request.getDescription(false).substring(4)
         );
 
-        return new ResponseEntity<>(callbackResponse, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/failed") // user-friendly authorization response
     public ResponseEntity<?> callbackFailed(){
-        return new ResponseEntity<>(callbackResponseProvider.getCallbackResponse(), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(globalResponseProvider.getCallbackResponse(), HttpStatus.FORBIDDEN);
     }
 
     public HttpEntity<?> generateAccessTokenRequestHttpEntity(String code) throws JsonProcessingException{

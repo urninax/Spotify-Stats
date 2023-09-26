@@ -1,6 +1,7 @@
 package me.urninax.spotifystats.security.controllers;
 
 import jakarta.validation.Valid;
+import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
 import me.urninax.spotifystats.security.dto.*;
 import me.urninax.spotifystats.security.models.RefreshToken;
 import me.urninax.spotifystats.security.models.User;
@@ -9,8 +10,6 @@ import me.urninax.spotifystats.security.utils.JWTUtil;
 import me.urninax.spotifystats.security.utils.UserValidator;
 import me.urninax.spotifystats.security.utils.exceptions.RefreshTokenExpiredException;
 import me.urninax.spotifystats.security.utils.exceptions.RefreshTokenNotFoundException;
-import me.urninax.spotifystats.security.utils.responses.RefreshTokenErrorResponse;
-import me.urninax.spotifystats.security.utils.responses.UserErrorResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -77,12 +75,12 @@ public class AuthController{
                         .append("; ");
             }
 
-            UserErrorResponse userErrorResponse = new UserErrorResponse( //generate error response if something's wrong
+            GlobalResponse response = new GlobalResponse( //generate error response if something's wrong
                     Instant.now(),
                     stringBuilder.toString(),
                     request.getDescription(false).substring(4));
 
-            return new ResponseEntity<>(userErrorResponse, HttpStatus.CONFLICT);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
 
         User registeredUser = registrationService.register(user);
@@ -109,8 +107,8 @@ public class AuthController{
         try{
             authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken); //authenticate user with username and password
         }catch(AuthenticationException e){
-            UserErrorResponse userErrorResponse = new UserErrorResponse(Instant.now(), "Invalid credentials", request.getDescription(false).substring(4));
-            return new ResponseEntity<>(userErrorResponse, HttpStatus.BAD_REQUEST);
+            GlobalResponse globalResponse = new GlobalResponse(Instant.now(), "Invalid credentials", request.getDescription(false).substring(4));
+            return new ResponseEntity<>(globalResponse, HttpStatus.BAD_REQUEST);
         }
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -141,7 +139,7 @@ public class AuthController{
                                                 BindingResult bindingResult, WebRequest request) throws RefreshTokenExpiredException, RefreshTokenNotFoundException{
 
         if(bindingResult.hasErrors()){ //validate body
-            RefreshTokenErrorResponse response = new RefreshTokenErrorResponse(
+            GlobalResponse response = new GlobalResponse(
                     Instant.now(),
                     bindingResult.getFieldErrors().get(0).getDefaultMessage(),
                     request.getDescription(false).substring(4)

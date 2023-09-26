@@ -1,12 +1,9 @@
 package me.urninax.spotifystats.security.controllers;
 
-import lombok.AllArgsConstructor;
-import me.urninax.spotifystats.security.services.RefreshTokenService;
+import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
 import me.urninax.spotifystats.security.utils.exceptions.RefreshTokenExpiredException;
 import me.urninax.spotifystats.security.utils.exceptions.RefreshTokenNotFoundException;
-import me.urninax.spotifystats.security.utils.responses.RefreshTokenErrorResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,8 +16,8 @@ public class RefreshTokenControllerAdvice{
 
     @ExceptionHandler({ RefreshTokenExpiredException.class })
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public RefreshTokenErrorResponse expiredHandler(RefreshTokenExpiredException exc, WebRequest request){
-        return new RefreshTokenErrorResponse(
+    public GlobalResponse expiredHandler(RefreshTokenExpiredException exc, WebRequest request){
+        return new GlobalResponse(
                 Instant.now(),
                 exc.getMessage(),
                 request.getDescription(false).substring(4)
@@ -29,8 +26,8 @@ public class RefreshTokenControllerAdvice{
 
     @ExceptionHandler({ RefreshTokenNotFoundException.class })
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public RefreshTokenErrorResponse notFoundHandler(RefreshTokenNotFoundException exc, WebRequest request){
-        return new RefreshTokenErrorResponse(
+    public GlobalResponse notFoundHandler(RefreshTokenNotFoundException exc, WebRequest request){
+        return new GlobalResponse(
                 Instant.now(),
                 exc.getMessage(),
                 request.getDescription(false).substring(4)

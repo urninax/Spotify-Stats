@@ -1,7 +1,7 @@
-package me.urninax.spotifystats.references.internal.controllers;
+package me.urninax.spotifystats.references.internal.components.controllers;
 
+import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
 import me.urninax.spotifystats.references.internal.uploading.exceptions.StorageException;
-import me.urninax.spotifystats.references.internal.uploading.responses.UploadErrorResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,22 +19,22 @@ public class StorageControllerAdvice{
 
     @ExceptionHandler({StorageException.class})
     public ResponseEntity<?> handleStorageException(StorageException exc, WebRequest request){
-        UploadErrorResponse uploadErrorResponse = new UploadErrorResponse(
+        GlobalResponse response = new GlobalResponse(
                 Instant.now(),
                 exc.getMessage(),
                 request.getDescription(false).substring(4)
         );
 
-        return new ResponseEntity<>(uploadErrorResponse, HttpStatus.NOT_ACCEPTABLE);
+        return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
     }
 
     @ExceptionHandler({MaxUploadSizeExceededException.class})
     public ResponseEntity<?> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException exc, WebRequest request){
-        UploadErrorResponse uploadErrorResponse = new UploadErrorResponse(
+        GlobalResponse response = new GlobalResponse(
                 Instant.now(),
                 String.format("%s. Maximum file size is %s", exc.getMessage(), maxSize),
                 request.getDescription(false).substring(4)
         );
-        return new ResponseEntity<>(uploadErrorResponse, HttpStatus.NOT_ACCEPTABLE);
+        return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
     }
 }

@@ -2,7 +2,7 @@ package me.urninax.spotifystats.spotifyauth.utils.providers;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.urninax.spotifystats.spotifyauth.app.responses.CallbackResponse;
+import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
 import org.springframework.stereotype.Component;
 
 /*
@@ -12,6 +12,6 @@ Provides callback response with reason between CallbackControllerAdvice and Call
 @Getter
 @Setter
 @Component
-public class CallbackResponseProvider{
-    private CallbackResponse callbackResponse;
+public class GlobalResponseProvider{
+    private GlobalResponse globalResponse;
 }
