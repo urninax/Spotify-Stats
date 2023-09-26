@@ -1,5 +1,8 @@
-package me.urninax.spotifystats.references.internal.uploading;
+package me.urninax.spotifystats.references.internal.uploading.services;
 
+import me.urninax.spotifystats.references.internal.uploading.StorageProperties;
+import me.urninax.spotifystats.references.internal.uploading.utils.Extension;
+import me.urninax.spotifystats.references.internal.uploading.utils.UnzipFile;
 import me.urninax.spotifystats.security.models.User;
 import org.springframework.core.io.Resource;
 import me.urninax.spotifystats.references.internal.uploading.exceptions.StorageException;

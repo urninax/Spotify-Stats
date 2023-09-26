@@ -1,6 +1,7 @@
-package me.urninax.spotifystats.references.internal.uploading;
+package me.urninax.spotifystats.references.internal.uploading.utils;
 
 import me.urninax.spotifystats.references.internal.uploading.exceptions.StorageException;
+import me.urninax.spotifystats.references.internal.uploading.utils.Extension;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 

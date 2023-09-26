@@ -1,4 +1,4 @@
-package me.urninax.spotifystats.references.internal.uploading;
+package me.urninax.spotifystats.references.internal.uploading.services;
 
 import me.urninax.spotifystats.security.models.User;
 import org.springframework.core.io.Resource;
