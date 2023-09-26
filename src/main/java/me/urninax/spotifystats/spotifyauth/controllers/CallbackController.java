@@ -97,10 +97,10 @@ public class CallbackController{
 
     @GetMapping("/failed") // user-friendly authorization response
     public ResponseEntity<?> callbackFailed(){
-        return new ResponseEntity<>(globalResponseProvider.getCallbackResponse(), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(globalResponseProvider.getGlobalResponse(), HttpStatus.FORBIDDEN);
     }
 
-    public HttpEntity<?> generateAccessTokenRequestHttpEntity(String code) throws JsonProcessingException{
+    public HttpEntity<?> generateAccessTokenRequestHttpEntity(String code){
         String appCredentials = String.format("%s:%s", clientId, clientSecret);
         String encodedAppCredentials = Base64.getUrlEncoder().encodeToString(appCredentials.getBytes());
 
