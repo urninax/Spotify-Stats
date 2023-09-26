@@ -22,49 +22,38 @@ import java.util.stream.Stream;
 
 @Service
 public class FileSystemStorageService implements StorageService{
-    private Path rootLocation;
+    private final Path zipLocation;
+    private final Path jsonLocation;
 
     @Autowired
     public FileSystemStorageService(StorageProperties properties){
-        this.rootLocation = Paths.get(properties.getLocation());
-    }
-
-    @Override
-    public void init(){
-        try{
-            Files.createDirectory(rootLocation);
-        }catch(IOException e){
-            throw new StorageException("Could not initialize storage", e);
-        }
+        this.zipLocation = Paths.get(properties.getZipLocation());
+        this.jsonLocation = Paths.get(properties.getJsonLocation());
     }
 
     @Override
     public void store(MultipartFile file, User user){
         try{
-            if(file.isEmpty()){
-                throw new StorageException("Failed to store empty file.");
-            }
-            Path destinationFile = this.rootLocation.resolve(
-                    Paths.get(Objects.requireNonNull(file.getOriginalFilename()))
-            );
-            if(!destinationFile.getParent().equals(this.rootLocation.toAbsolutePath())){
-                throw new StorageException("Cannot store file outside current directory");
-            }
+            Path destinationFile = formDestinationFile(file, user);
 
             try(InputStream inputStream = file.getInputStream()){
                 Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
             }
+            //TODO: unzip if zip, read if json
+            //TODO: move data to database
+            //TODO: delete uploaded files
+
         }catch(IOException e){
-            throw new StorageException("Failed to store file", e);
+            throw new StorageException("Failed to store file.", e);
         }
     }
 
     @Override
     public Stream<Path> loadAll(){
         try{
-            return Files.walk(this.rootLocation, 1)
-                    .filter(path -> !path.equals(this.rootLocation))
-                    .map(this.rootLocation::relativize);
+            return Files.walk(this.jsonLocation, 1)
+                    .filter(path -> !path.equals(this.jsonLocation))
+                    .map(this.jsonLocation::relativize);
         }catch(IOException e){
             throw new StorageException("Failed to read stored files", e);
         }
@@ -72,7 +61,7 @@ public class FileSystemStorageService implements StorageService{
 
     @Override
     public Path load(String filename){
-        return rootLocation.resolve(filename);
+        return jsonLocation.resolve(filename);
     }
 
     @Override
@@ -95,7 +84,30 @@ public class FileSystemStorageService implements StorageService{
     }
 
     @Override
-    public void deleteAll(){
-        FileSystemUtils.deleteRecursively(rootLocation.toFile());
+    public void deleteAll(Path userDirectory){
+        FileSystemUtils.deleteRecursively(userDirectory.toFile());
+    }
+
+    public Path formDestinationFile(MultipartFile file, User user){
+        if(file.isEmpty()){
+            throw new StorageException("Failed to store empty file.");
+        }
+
+        try{
+            String extension = Objects.requireNonNull(file.getOriginalFilename()).split("\\.")[1];
+
+            if(extension.equals("zip")){
+                return zipLocation.resolve(String.format("%s.%s", user.getId(), extension));
+            }else if(extension.equals("json")){
+                Path userCreatedDirectory = Files.createDirectory(jsonLocation.resolve(String.valueOf(user.getId())));
+                return userCreatedDirectory.resolve(file.getOriginalFilename());
+            }else{
+                throw new StorageException("Unknown file extension.");
+            }
+        }catch(ArrayIndexOutOfBoundsException exc){
+            throw new StorageException("Unknown file extension.");
+        }catch(IOException e){
+            throw new StorageException("Failed to store file.", e);
+        }
     }
 }
