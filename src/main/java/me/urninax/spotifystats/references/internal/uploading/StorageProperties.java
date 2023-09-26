@@ -9,9 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Getter
 @Setter
 public class StorageProperties{
-    @Value("${zipFilesLocation}")
-    private String zipLocation;
-
-    @Value("${jsonFilesLocation}")
-    private String jsonLocation;
+    @Value("${filesLocation}")
+    private String filesLocation;
 }

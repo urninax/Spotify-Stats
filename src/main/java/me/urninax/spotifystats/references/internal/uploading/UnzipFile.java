@@ -15,35 +15,38 @@ import java.util.zip.ZipInputStream;
 
 @Component
 public class UnzipFile{
-    public static void unzip(MultipartFile file, Path path){
+    public void unzip(MultipartFile file, Path path) throws StorageException{ //file -> zip file, path -> files/{user_id}
         try{
-            ZipInputStream zis = new ZipInputStream(file.getInputStream());
             byte[] buffer = new byte[1024];
 
+            ZipInputStream zis = new ZipInputStream(file.getInputStream());
             ZipEntry entry = zis.getNextEntry();
 
             while(entry != null){
-                String entryExtension = Extension.getExtension(entry.getName()).orElseThrow(() ->
-                        new StorageException("Unknown file extension."));
-
-                if(entry.getName().startsWith("endsong") && entryExtension.equals("json")){
-                    FileOutputStream fos = getFileOutputStream(path, entry);
-                    int len;
-                    while((len = zis.read(buffer))>0){
-                        fos.write(buffer, 0, len);
+                Optional<String> extensionOptional = Extension.getExtension(entry.getName());
+                if(extensionOptional.isPresent()){
+                    String entryExtension = extensionOptional.get();
+                    if(entry.getName().contains("endsong") && entryExtension.equals("json")){
+                        FileOutputStream fos = getFileOutputStream(path, entry);
+                        int len;
+                        while((len = zis.read(buffer))>0){
+                            fos.write(buffer, 0, len);
+                        }
+                        fos.close();
                     }
-                    fos.close();
-
-                    entry = zis.getNextEntry();
                 }
+                entry = zis.getNextEntry();
             }
         }catch(IOException e){
-            throw new RuntimeException(e);
+            throw new StorageException("Failed to store file.");
         }
     }
 
-    private static FileOutputStream getFileOutputStream(Path path, ZipEntry entry) throws FileNotFoundException{
-        Path destinationFile = path.resolve(entry.getName()).toAbsolutePath();
+    private static FileOutputStream getFileOutputStream(Path path, ZipEntry entry) throws FileNotFoundException, StorageException{
+        String entryName = entry.getName();
+        String filename = entryName.contains("/") ? entryName.substring(entryName.lastIndexOf("/") + 1) : entryName;
+
+        Path destinationFile = path.resolve(filename).toAbsolutePath();
 
         if(!destinationFile.getParent().equals(path.toAbsolutePath())){
             // This is a security check
