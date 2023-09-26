@@ -5,6 +5,7 @@ spring.datasource.password=
 
 spring.jpa.properties.hibernate.show_sql=
 spring.jpa.properties.hibernate.dialect=
+spring.jpa.properties.hibernate.jdbc.batch_size=
 
 spring.servlet.multipart.max-file-size=
 spring.servlet.multipart.max-request-size=
