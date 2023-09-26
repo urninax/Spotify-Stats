@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import me.urninax.spotifystats.spotifyauth.models.SpotifyCredentials;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "spotify_user")
@@ -44,5 +45,8 @@ import java.time.Instant;
     @OneToOne
     @JoinColumn(name = "credentials_id", referencedColumnName = "id")
     private SpotifyCredentials credentials;
+
+    @OneToMany(mappedBy = "spotifyUser")
+    private List<SpotifyFileStream> fileStreams;
 }
 

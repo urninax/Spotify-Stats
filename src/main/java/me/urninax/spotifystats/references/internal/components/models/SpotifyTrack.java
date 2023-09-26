@@ -36,4 +36,7 @@ import java.util.List;
             inverseJoinColumns = @JoinColumn(name = "track_id")
     )
     private List<SpotifyArtist> artists;
+
+    @OneToMany(mappedBy = "track")
+    private List<SpotifyFileStream> fileStreams;
 }
