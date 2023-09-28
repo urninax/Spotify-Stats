@@ -1,18 +1,17 @@
 package me.urninax.spotifystats.spotifyauth.services;
 
-import lombok.AllArgsConstructor;
-import me.urninax.spotifystats.security.models.User;
-import me.urninax.spotifystats.security.repositories.UserRepository;
+import me.urninax.spotifystats.references.internal.components.models.SpotifyUser;
+import me.urninax.spotifystats.security.services.UserDetailsImpl;
 import me.urninax.spotifystats.spotifyauth.dto.RefreshedAccessTokenDTO;
 import me.urninax.spotifystats.spotifyauth.models.SpotifyCredentials;
 import me.urninax.spotifystats.spotifyauth.repositories.SpotifyCredentialsRepository;
-import me.urninax.spotifystats.spotifyauth.spotifyserver.requests.RefreshedAccessTokenRequest;
 import me.urninax.spotifystats.spotifyauth.utils.SpotifyCredentialsHolder;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyNotConnectedException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -21,7 +20,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.Base64;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -47,12 +45,14 @@ public class SpotifyCredentialsService{
         spotifyCredentialsRepository.save(spotifyCredentials);
     }
 
-    public void verify(User user) throws SpotifyNotConnectedException, SpotifyServerErrorException{
+    public String getAccessToken() throws SpotifyNotConnectedException, SpotifyServerErrorException{
         if(spotifyCredentialsHolder.getSpotifyCredentials() == null){ //check whether user spotify credentials is empty in SpotifyCredentialsHolder
-            Optional<SpotifyCredentials> credentialsOptional = spotifyCredentialsRepository.findByUser(user);
+            UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            SpotifyCredentials credentials = userDetails.getUser().getSpotifyCredentials();
 
-            if(credentialsOptional.isPresent()){
-                SpotifyCredentials credentials = credentialsOptional.get();
+//            Optional<SpotifyCredentials> credentialsOptional = spotifyCredentialsRepository.findByUser(userDetails.getUser()); //use if User from ContextHolder doesn't have SpotifyCredentials
+
+            if(credentials != null){
                 spotifyCredentialsHolder.setSpotifyCredentials(credentials);
             }else{
                 throw new SpotifyNotConnectedException("Spotify is not connected");
@@ -63,6 +63,12 @@ public class SpotifyCredentialsService{
         if(Instant.now().isAfter(expiresAt)){
             update(spotifyCredentialsHolder.getSpotifyCredentials());
         }
+
+        return spotifyCredentialsHolder.getSpotifyCredentials().getAccessToken();
+    }
+
+    public SpotifyUser getLocalSpotifyUser(){
+        return spotifyCredentialsHolder.getSpotifyCredentials().getSpotifyUser();
     }
 
     @Transactional

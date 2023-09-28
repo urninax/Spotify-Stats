@@ -1,11 +1,11 @@
 package me.urninax.spotifystats.spotifyauth.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import me.urninax.spotifystats.references.internal.components.models.SpotifyUser;
 import me.urninax.spotifystats.security.models.User;
 
 import java.time.Instant;
@@ -38,4 +38,7 @@ public class SpotifyCredentials{
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
+
+    @OneToOne(mappedBy = "credentials")
+    private SpotifyUser spotifyUser;
 }

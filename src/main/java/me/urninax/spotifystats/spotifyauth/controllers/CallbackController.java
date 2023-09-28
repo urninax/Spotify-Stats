@@ -1,7 +1,9 @@
 package me.urninax.spotifystats.spotifyauth.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletResponse;
+import me.urninax.spotifystats.references.internal.components.dto.spotifyuser.SpotifyUserDTO;
+import me.urninax.spotifystats.references.internal.components.models.SpotifyImage;
+import me.urninax.spotifystats.references.internal.components.models.SpotifyUser;
 import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
 import me.urninax.spotifystats.security.models.User;
 import me.urninax.spotifystats.security.services.UserService;
@@ -25,6 +27,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -60,7 +63,7 @@ public class CallbackController{
     public void getCallback(@RequestParam(value = "code", required = false) String code,
                               @RequestParam(value = "error", required = false) String error,
                               @RequestParam(value = "state") String state,
-                              HttpServletResponse httpResponse) throws VerificationException, SpotifyServerErrorException, JsonProcessingException{
+                              HttpServletResponse httpResponse) throws VerificationException, SpotifyServerErrorException{
 
         authVerifier.verify(state, code, error); //verify all the fields from Spotify server
 
@@ -116,7 +119,7 @@ public class CallbackController{
         return new HttpEntity<>(map, headers);
     }
 
-    public SpotifyCredentials mapSpotifyCredentials(SpotifyCredentialsDTO dto, Instant getResponseAt){
+    public SpotifyCredentials mapSpotifyCredentials(SpotifyCredentialsDTO dto, Instant getResponseAt) throws SpotifyServerErrorException{
         Optional<User> optionalUser = userService.findByUsername(usernameProvider.getUsername());
 
         SpotifyCredentials spotifyCredentials = new SpotifyCredentials();
@@ -126,9 +129,43 @@ public class CallbackController{
         spotifyCredentials.setExpiresAt(getResponseAt.plusSeconds(dto.getExpiresIn()));
         spotifyCredentials.setRefreshToken(dto.getRefreshToken());
         optionalUser.ifPresent(spotifyCredentials::setUser);
-
-        System.out.println(dto.getAccessToken());
+        SpotifyUser spotifyUser = getSpotifyUser(dto.getAccessToken());
+        spotifyCredentials.setSpotifyUser(spotifyUser);
+        spotifyUser.setCredentials(spotifyCredentials);
 
         return spotifyCredentials;
+    }
+
+    public SpotifyUser getSpotifyUser(String accessToken) throws SpotifyServerErrorException{
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", String.format("Bearer %s", accessToken));
+
+        String link = "https://api.spotify.com/v1/me";
+
+        ResponseEntity<SpotifyUserDTO> response = restTemplate.exchange(link, HttpMethod.GET, new HttpEntity<>(headers), SpotifyUserDTO.class);
+
+        if(response.getBody() != null){
+            SpotifyUserDTO spotifyUserDTO = response.getBody();
+            return convertToSpotifyUser(spotifyUserDTO);
+        }else{
+            throw new SpotifyServerErrorException("Spotify server error.");
+        }
+    }
+
+    public SpotifyUser convertToSpotifyUser(SpotifyUserDTO dto){
+        SpotifyUser spotifyUser = new SpotifyUser();
+        spotifyUser.setSpotifyId(dto.getSpotifyId());
+        spotifyUser.setUsername(dto.getUsername());
+        spotifyUser.setDisplayName(dto.getDisplayName());
+        spotifyUser.setExternalUrl(dto.getExternalUrl().getUrl());
+        spotifyUser.setHref(dto.getHref());
+        spotifyUser.setFollowersNumber(dto.getFollowers().getTotal());
+
+        List<SpotifyImage> spotifyImage = dto.getImages();
+        if(!spotifyImage.isEmpty()){
+            spotifyUser.setImage(dto.getImages().get(0));
+        }
+
+        return spotifyUser;
     }
 }
