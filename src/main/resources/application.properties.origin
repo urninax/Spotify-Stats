@@ -10,8 +10,6 @@ spring.jpa.properties.hibernate.jdbc.batch_size=
 spring.servlet.multipart.max-file-size=
 spring.servlet.multipart.max-request-size=
 
-filesLocation=
-
 jwtSecret=
 jwtExpirationMs=
 jwtRefreshExpirationMs=

@@ -1,7 +1,7 @@
 package me.urninax.spotifystats.security.controllers;
 
 import jakarta.validation.Valid;
-import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
+import me.urninax.spotifystats.components.utils.GlobalResponse;
 import me.urninax.spotifystats.security.dto.*;
 import me.urninax.spotifystats.security.models.RefreshToken;
 import me.urninax.spotifystats.security.models.User;
@@ -35,7 +35,6 @@ public class AuthController{
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final JWTUtil jwtUtil;
-    private final UserService userService;
 
     @Value("${jwtExpirationMs}")
     private Long expirationMs;
@@ -45,7 +44,7 @@ public class AuthController{
                           ModelMapper modelMapper,
                           AuthenticationManager authenticationManager,
                           RefreshTokenService refreshTokenService,
-                          JWTUtil jwtUtil, UserService userService){
+                          JWTUtil jwtUtil){
 
         this.registrationService = registrationService;
         this.userValidator = userValidator;
@@ -53,7 +52,6 @@ public class AuthController{
         this.authenticationManager = authenticationManager;
         this.refreshTokenService = refreshTokenService;
         this.jwtUtil = jwtUtil;
-        this.userService = userService;
     }
 
     @PostMapping("/signup")

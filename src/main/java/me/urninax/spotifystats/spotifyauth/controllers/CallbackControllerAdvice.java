@@ -2,7 +2,7 @@ package me.urninax.spotifystats.spotifyauth.controllers;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
+import me.urninax.spotifystats.components.utils.GlobalResponse;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyNotConnectedException;
 import me.urninax.spotifystats.spotifyauth.utils.providers.GlobalResponseProvider;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;

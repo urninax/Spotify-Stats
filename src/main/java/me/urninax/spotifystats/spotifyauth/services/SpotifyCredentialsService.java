@@ -1,6 +1,6 @@
 package me.urninax.spotifystats.spotifyauth.services;
 
-import me.urninax.spotifystats.references.internal.components.models.SpotifyUser;
+import me.urninax.spotifystats.components.models.SpotifyUser;
 import me.urninax.spotifystats.security.services.UserDetailsImpl;
 import me.urninax.spotifystats.spotifyauth.dto.RefreshedAccessTokenDTO;
 import me.urninax.spotifystats.spotifyauth.models.SpotifyCredentials;
@@ -46,18 +46,7 @@ public class SpotifyCredentialsService{
     }
 
     public String getAccessToken() throws SpotifyNotConnectedException, SpotifyServerErrorException{
-        if(spotifyCredentialsHolder.getSpotifyCredentials() == null){ //check whether user spotify credentials is empty in SpotifyCredentialsHolder
-            UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            SpotifyCredentials credentials = userDetails.getUser().getSpotifyCredentials();
-
-//            Optional<SpotifyCredentials> credentialsOptional = spotifyCredentialsRepository.findByUser(userDetails.getUser()); //use if User from ContextHolder doesn't have SpotifyCredentials
-
-            if(credentials != null){
-                spotifyCredentialsHolder.setSpotifyCredentials(credentials);
-            }else{
-                throw new SpotifyNotConnectedException("Spotify is not connected");
-            }
-        }
+        setSpotifyCredentials();
         Instant expiresAt = spotifyCredentialsHolder.getSpotifyCredentials().getExpiresAt();
 
         if(Instant.now().isAfter(expiresAt)){
@@ -67,8 +56,23 @@ public class SpotifyCredentialsService{
         return spotifyCredentialsHolder.getSpotifyCredentials().getAccessToken();
     }
 
-    public SpotifyUser getLocalSpotifyUser(){
+    public SpotifyUser getLocalSpotifyUser() throws SpotifyNotConnectedException{
+        setSpotifyCredentials();
         return spotifyCredentialsHolder.getSpotifyCredentials().getSpotifyUser();
+    }
+
+    public void setSpotifyCredentials() throws SpotifyNotConnectedException{
+        if(spotifyCredentialsHolder.getSpotifyCredentials() == null){
+            UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            SpotifyCredentials credentials = userDetails.getUser().getSpotifyCredentials();
+
+            // Optional<SpotifyCredentials> credentialsOptional = spotifyCredentialsRepository.findByUser(userDetails.getUser()); //use if User from ContextHolder doesn't have SpotifyCredentials
+            if(credentials != null){
+                spotifyCredentialsHolder.setSpotifyCredentials(credentials);
+            }else{
+                throw new SpotifyNotConnectedException("Spotify is not connected");
+            }
+        }
     }
 
     @Transactional

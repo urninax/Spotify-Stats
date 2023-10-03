@@ -1,10 +1,11 @@
 package me.urninax.spotifystats.spotifyauth.controllers;
 
 import jakarta.servlet.http.HttpServletResponse;
-import me.urninax.spotifystats.references.internal.components.dto.spotifyuser.SpotifyUserDTO;
-import me.urninax.spotifystats.references.internal.components.models.SpotifyImage;
-import me.urninax.spotifystats.references.internal.components.models.SpotifyUser;
-import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
+import me.urninax.spotifystats.components.dto.SpotifyImageDTO;
+import me.urninax.spotifystats.components.dto.SpotifyUserDTO;
+import me.urninax.spotifystats.components.models.SpotifyUser;
+import me.urninax.spotifystats.components.utils.CustomObjectMapper;
+import me.urninax.spotifystats.components.utils.GlobalResponse;
 import me.urninax.spotifystats.security.models.User;
 import me.urninax.spotifystats.security.services.UserService;
 import me.urninax.spotifystats.spotifyauth.dto.SpotifyCredentialsDTO;
@@ -33,6 +34,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/callback")
 public class CallbackController{
+    private final CustomObjectMapper customMapper;
     private final AuthVerifier authVerifier;
     private final GlobalResponseProvider globalResponseProvider;
     private final UserService userService;
@@ -51,7 +53,8 @@ public class CallbackController{
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Autowired
-    public CallbackController(AuthVerifier authVerifier, GlobalResponseProvider globalResponseProvider, UserService userService, SpotifyCredentialsService spotifyCredentialsService, UsernameProvider usernameProvider){
+    public CallbackController(CustomObjectMapper customMapper, AuthVerifier authVerifier, GlobalResponseProvider globalResponseProvider, UserService userService, SpotifyCredentialsService spotifyCredentialsService, UsernameProvider usernameProvider){
+        this.customMapper = customMapper;
         this.authVerifier = authVerifier;
         this.globalResponseProvider = globalResponseProvider;
         this.userService = userService;
@@ -128,6 +131,7 @@ public class CallbackController{
         spotifyCredentials.setScope(dto.getScope());
         spotifyCredentials.setExpiresAt(getResponseAt.plusSeconds(dto.getExpiresIn()));
         spotifyCredentials.setRefreshToken(dto.getRefreshToken());
+
         optionalUser.ifPresent(spotifyCredentials::setUser);
         SpotifyUser spotifyUser = getSpotifyUser(dto.getAccessToken());
         spotifyCredentials.setSpotifyUser(spotifyUser);
@@ -155,16 +159,14 @@ public class CallbackController{
     public SpotifyUser convertToSpotifyUser(SpotifyUserDTO dto){
         SpotifyUser spotifyUser = new SpotifyUser();
         spotifyUser.setSpotifyId(dto.getSpotifyId());
-        spotifyUser.setUsername(dto.getUsername());
         spotifyUser.setDisplayName(dto.getDisplayName());
-        spotifyUser.setExternalUrl(dto.getExternalUrl().getUrl());
+        spotifyUser.setExternalUrl(dto.getExternalUrls().getUrl());
         spotifyUser.setHref(dto.getHref());
         spotifyUser.setFollowersNumber(dto.getFollowers().getTotal());
 
-        List<SpotifyImage> spotifyImage = dto.getImages();
-        if(!spotifyImage.isEmpty()){
-            spotifyUser.setImage(dto.getImages().get(0));
-        }
+        List<SpotifyImageDTO> spotifyImages = dto.getImages();
+        spotifyUser.setImage(customMapper.spotifyImageDTOtoEntity(spotifyImages));
+
 
         return spotifyUser;
     }

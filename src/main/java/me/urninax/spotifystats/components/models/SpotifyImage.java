@@ -1,9 +1,10 @@
-package me.urninax.spotifystats.references.internal.components.models;
+package me.urninax.spotifystats.components.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @Entity
@@ -24,12 +25,15 @@ import java.util.List;
     @Column(name = "width")
     private int width;
 
-    @OneToMany(mappedBy = "image")
-    private List<SpotifyAlbum> albums;
+    @Column(name = "hash")
+    private String hash;
 
     @OneToMany(mappedBy = "image")
-    private List<SpotifyArtist> artists;
+    private List<SpotifyAlbum> albums = new LinkedList<>();
 
     @OneToMany(mappedBy = "image")
-    private List<SpotifyTrack> tracks;
+    private List<SpotifyArtist> artists = new LinkedList<>();
+
+    @OneToMany(mappedBy = "image")
+    private List<SpotifyTrack> tracks = new LinkedList<>();
 }

@@ -1,12 +1,12 @@
-package me.urninax.spotifystats.references.internal.components.controllers;
+package me.urninax.spotifystats.components.controllers;
 
 import lombok.AllArgsConstructor;
-import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
-import me.urninax.spotifystats.references.internal.uploading.services.StorageService;
-import me.urninax.spotifystats.security.services.UserDetailsImpl;
+import me.urninax.spotifystats.components.utils.GlobalResponse;
+import me.urninax.spotifystats.references.internal.uploading.services.FileService;
+import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyNotConnectedException;
+import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,12 +20,11 @@ import java.time.Instant;
 @RequestMapping("/api/settings")
 @AllArgsConstructor
 public class FileUploadController{
-    private final StorageService storageService;
+    private final FileService fileService;
 
     @PostMapping("/upload")
-    public ResponseEntity<?> handleFileUpload(@RequestParam("file") MultipartFile file, WebRequest request){
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        storageService.store(file, userDetails.getUser());
+    public ResponseEntity<?> handleFileUpload(@RequestParam("files") MultipartFile[] files, WebRequest request) throws SpotifyServerErrorException, SpotifyNotConnectedException{
+        fileService.store(files);
 
         GlobalResponse response = new GlobalResponse(Instant.now(), "File successfully uploaded", request.getDescription(false).substring(4));
 

@@ -1,9 +1,10 @@
-package me.urninax.spotifystats.references.internal.components.models;
+package me.urninax.spotifystats.components.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "spotify_file_stream")
@@ -15,6 +16,9 @@ import java.time.Instant;
 
     @Column(name = "username")
     private String username;
+
+    @Column(name = "track_name")
+    private String trackName;
 
     @Column(name = "ms_played")
     private int msPlayed;
@@ -29,7 +33,20 @@ import java.time.Instant;
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private SpotifyUser spotifyUser;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "track_id", referencedColumnName = "id")
     private SpotifyTrack track;
+
+    @Override
+    public boolean equals(Object o){
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
+        SpotifyFileStream that = (SpotifyFileStream) o;
+        return Objects.equals(spotifyId, that.spotifyId);
+    }
+
+    @Override
+    public int hashCode(){
+        return Objects.hash(spotifyId);
+    }
 }

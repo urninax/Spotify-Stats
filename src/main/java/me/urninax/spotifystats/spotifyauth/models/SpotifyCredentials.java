@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import me.urninax.spotifystats.references.internal.components.models.SpotifyUser;
+import me.urninax.spotifystats.components.models.SpotifyUser;
 import me.urninax.spotifystats.security.models.User;
 
 import java.time.Instant;
@@ -39,6 +39,6 @@ public class SpotifyCredentials{
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    @OneToOne(mappedBy = "credentials")
+    @OneToOne(mappedBy = "credentials", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private SpotifyUser spotifyUser;
 }

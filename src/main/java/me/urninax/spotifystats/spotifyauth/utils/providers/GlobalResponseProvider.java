@@ -2,7 +2,7 @@ package me.urninax.spotifystats.spotifyauth.utils.providers;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
+import me.urninax.spotifystats.components.utils.GlobalResponse;
 import org.springframework.stereotype.Component;
 
 /*

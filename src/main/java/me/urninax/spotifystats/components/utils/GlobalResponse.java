@@ -1,4 +1,4 @@
-package me.urninax.spotifystats.references.internal.components.utils;
+package me.urninax.spotifystats.components.utils;
 
 import lombok.*;
 

@@ -1,6 +1,6 @@
-package me.urninax.spotifystats.references.internal.components.controllers;
+package me.urninax.spotifystats.components.controllers;
 
-import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
+import me.urninax.spotifystats.components.utils.GlobalResponse;
 import me.urninax.spotifystats.references.internal.uploading.exceptions.StorageException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;

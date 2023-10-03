@@ -1,6 +1,6 @@
 package me.urninax.spotifystats.security.controllers;
 
-import me.urninax.spotifystats.references.internal.components.utils.GlobalResponse;
+import me.urninax.spotifystats.components.utils.GlobalResponse;
 import me.urninax.spotifystats.security.utils.exceptions.RefreshTokenExpiredException;
 import me.urninax.spotifystats.security.utils.exceptions.RefreshTokenNotFoundException;
 import org.springframework.http.HttpStatus;

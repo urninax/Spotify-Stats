@@ -1,9 +1,10 @@
-package me.urninax.spotifystats.references.internal.components.models;
+package me.urninax.spotifystats.components.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @Entity
@@ -21,14 +22,25 @@ import java.util.List;
     @Column(name = "name")
     private String name;
 
-    @ManyToOne
+    @Column(name = "external_url")
+    private String externalUrl;
+
+    @Column(name = "followers_number")
+    private int followersNumber;
+
+    @Column(name = "popularity")
+    private int popularity;
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "image_id", referencedColumnName = "id")
     private SpotifyImage image;
 
     @ManyToMany(mappedBy = "artists")
-    private List<SpotifyAlbum> albums;
+    private List<SpotifyAlbum> albums = new LinkedList<>();
 
     @ManyToMany(mappedBy = "artists")
-    private List<SpotifyTrack> tracks;
+    private List<SpotifyTrack> tracks = new LinkedList<>();
+
+
 
 }

@@ -1,4 +1,4 @@
-package me.urninax.spotifystats.references.internal.components.models;
+package me.urninax.spotifystats.components.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import me.urninax.spotifystats.spotifyauth.models.SpotifyCredentials;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 
 @Entity
@@ -19,9 +20,6 @@ import java.util.List;
 
     @Column(name = "spotify_id")
     private String spotifyId;
-
-    @Column(name = "username")
-    private String username;
 
     @Column(name = "display_name")
     private String displayName;
@@ -38,7 +36,7 @@ import java.util.List;
     @Column(name = "last_fetched")
     private Instant lastFetched;
 
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "image_id", referencedColumnName = "id")
     private SpotifyImage image;
 
@@ -47,6 +45,9 @@ import java.util.List;
     private SpotifyCredentials credentials;
 
     @OneToMany(mappedBy = "spotifyUser")
-    private List<SpotifyFileStream> fileStreams;
+    private List<SpotifyFileStream> fileStreams = new LinkedList<>();
+
+    @OneToMany(mappedBy = "spotifyUser")
+    private List<SpotifyUploadedFile> fileStats = new LinkedList<>();
 }
 
