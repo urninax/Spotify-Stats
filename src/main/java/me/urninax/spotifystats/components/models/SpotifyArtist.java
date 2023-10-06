@@ -31,7 +31,7 @@ import java.util.List;
     @Column(name = "popularity")
     private int popularity;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne
     @JoinColumn(name = "image_id", referencedColumnName = "id")
     private SpotifyImage image;
 
@@ -40,7 +40,4 @@ import java.util.List;
 
     @ManyToMany(mappedBy = "artists")
     private List<SpotifyTrack> tracks = new LinkedList<>();
-
-
-
 }

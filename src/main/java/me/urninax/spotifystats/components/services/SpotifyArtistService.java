@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,5 +21,15 @@ public class SpotifyArtistService{
 
     public Optional<SpotifyArtist> findBySpotifyId(String spotifyId){
         return spotifyArtistRepository.findSpotifyArtistBySpotifyId(spotifyId);
+    }
+
+    @Transactional
+    public SpotifyArtist save(SpotifyArtist spotifyArtist){
+        return spotifyArtistRepository.save(spotifyArtist);
+    }
+
+    @Transactional
+    public List<SpotifyArtist> saveAll(List<SpotifyArtist> artists){
+        return spotifyArtistRepository.saveAll(artists);
     }
 }

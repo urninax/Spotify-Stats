@@ -34,6 +34,3 @@ build/
 
 ### application.properties ###
 application.properties
-
-### Uploaded user files ###
-/src/main/java/me/urninax/spotifystats/references/internal/uploading/files/

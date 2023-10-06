@@ -83,7 +83,7 @@ public class CustomObjectMapper{
 //        spotifyTrack.setArtists(dto.getArtists().stream().map(artist ->
 //                spotifyArtistDTOtoEntity(artist, true)).collect(Collectors.toList()));
 
-        return spotifyTrack;
+        return spotifyTrackService.save(spotifyTrack);
     }
 
     public SpotifyAlbum spotifyAlbumDTOtoEntity(SpotifyAlbumDTO dto) throws SpotifyServerErrorException, SpotifyNotConnectedException{
@@ -105,7 +105,7 @@ public class CustomObjectMapper{
         spotifyAlbum.setImage(spotifyImageDTOtoEntity(dto.getImages()));
         spotifyAlbum.getArtists().addAll(resolveSimplifiedArtists(dto.getSimplifiedArtists())); //or get and addALl whole List if it doesn't work
 
-        return spotifyAlbum;
+        return spotifyAlbumService.save(spotifyAlbum);
     }
 
     public SpotifyArtist spotifyArtistDTOtoEntity(SpotifyArtistDTO dto, boolean check){
@@ -122,14 +122,11 @@ public class CustomObjectMapper{
         spotifyArtist.setSpotifyId(dto.getId());
         spotifyArtist.setName(dto.getName());
         spotifyArtist.setExternalUrl(dto.getExternalUrls().getUrl());
-        if(dto.getFollowers() == null){
-            System.out.println("null");
-        }
         spotifyArtist.setFollowersNumber(dto.getFollowers().getTotal());
         spotifyArtist.setPopularity(dto.getPopularity());
         spotifyArtist.setImage(spotifyImageDTOtoEntity(dto.getImages()));
 
-        return spotifyArtist;
+        return spotifyArtistService.save(spotifyArtist);
     }
 
     public SpotifyImage spotifyImageDTOtoEntity(List<SpotifyImageDTO> dtoList){
@@ -152,7 +149,7 @@ public class CustomObjectMapper{
             spotifyImage.setWidth(dto.getWidth());
             spotifyImage.setHeight(dto.getHeight());
 
-            return spotifyImage;
+            return spotifyImageService.save(spotifyImage);
         }
         return null;
     }
@@ -186,7 +183,7 @@ public class CustomObjectMapper{
             }
         }
 
-        return artists;
+        return spotifyArtistService.saveAll(artists);
     }
 
     public List<SpotifyArtist> severalArtistsDTOtoEntities(SeveralArtistsDTO severalArtistsDTO){

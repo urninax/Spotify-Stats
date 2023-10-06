@@ -37,15 +37,15 @@ import java.util.Objects;
     @Column(name = "external_url")
     private String externalUrl;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne
     @JoinColumn(name = "image_id", referencedColumnName = "id")
     private SpotifyImage image;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne
     @JoinColumn(name = "album_id", referencedColumnName = "id")
     private SpotifyAlbum album;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany
     @JoinTable(
             name = "spotify_track_artist",
             joinColumns = @JoinColumn(name = "track_id"),

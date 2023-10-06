@@ -59,7 +59,7 @@ public class SpotifyAPIRequests{
 
     public void wait400ms(){
         long now = System.currentTimeMillis();
-        long requestAllowedAt = requestAt+400;
+        long requestAllowedAt = requestAt+200;
 
         if(requestAllowedAt>now){
             try{

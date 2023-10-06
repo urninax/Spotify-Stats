@@ -21,4 +21,9 @@ public class SpotifyAlbumService{
     public Optional<SpotifyAlbum> findBySpotifyId(String spotifyId){
         return spotifyAlbumRepository.findSpotifyAlbumBySpotifyId(spotifyId);
     }
+
+    @Transactional
+    public SpotifyAlbum save(SpotifyAlbum spotifyAlbum){
+        return spotifyAlbumRepository.save(spotifyAlbum);
+    }
 }

@@ -12,16 +12,20 @@ import me.urninax.spotifystats.spotifyauth.dto.SpotifyCredentialsDTO;
 import me.urninax.spotifystats.spotifyauth.models.SpotifyCredentials;
 import me.urninax.spotifystats.spotifyauth.services.SpotifyCredentialsService;
 import me.urninax.spotifystats.spotifyauth.utils.AuthVerifier;
-import me.urninax.spotifystats.spotifyauth.utils.providers.GlobalResponseProvider;
-import me.urninax.spotifystats.spotifyauth.utils.providers.UsernameProvider;
+import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyAlreadyConnectedException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.VerificationException;
+import me.urninax.spotifystats.spotifyauth.utils.providers.GlobalResponseProvider;
+import me.urninax.spotifystats.spotifyauth.utils.providers.UsernameProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.WebRequest;
 
@@ -66,7 +70,7 @@ public class CallbackController{
     public void getCallback(@RequestParam(value = "code", required = false) String code,
                               @RequestParam(value = "error", required = false) String error,
                               @RequestParam(value = "state") String state,
-                              HttpServletResponse httpResponse) throws VerificationException, SpotifyServerErrorException{
+                              HttpServletResponse httpResponse) throws VerificationException, SpotifyServerErrorException, SpotifyAlreadyConnectedException{
 
         authVerifier.verify(state, code, error); //verify all the fields from Spotify server
 
@@ -78,7 +82,17 @@ public class CallbackController{
                                                                                 SpotifyCredentialsDTO.class);
 
         if(response.getBody() != null){
-            spotifyCredentialsService.save(mapSpotifyCredentials(response.getBody(), Instant.now()));
+            Optional<User> userOptional = userService.findByUsername(usernameProvider.getUsername());
+
+            if(userOptional.isPresent()){
+                Optional<SpotifyCredentials> spotifyCredentialsOptional = spotifyCredentialsService.findByUser(userOptional.get());
+
+                if(spotifyCredentialsOptional.isEmpty()){
+                    spotifyCredentialsService.save(mapSpotifyCredentials(response.getBody(), Instant.now()));
+                }else{
+                    throw new SpotifyAlreadyConnectedException("Spotify account already connected.");
+                }
+            }
         }else{
             throw new SpotifyServerErrorException("Didn't receive a response from Spotify server.");
         }

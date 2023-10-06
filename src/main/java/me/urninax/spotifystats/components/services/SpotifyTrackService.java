@@ -23,7 +23,7 @@ public class SpotifyTrackService{
     }
 
     @Transactional
-    public void save(SpotifyTrack spotifyTrack){
-        spotifyTrackRepository.save(spotifyTrack);
+    public SpotifyTrack save(SpotifyTrack spotifyTrack){
+        return spotifyTrackRepository.save(spotifyTrack);
     }
 }

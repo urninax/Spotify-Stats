@@ -37,11 +37,11 @@ import java.util.List;
     @Column(name = "release_date_precision")
     private String releaseDatePrecision;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne
     @JoinColumn(name = "image_id", referencedColumnName = "id")
     private SpotifyImage image;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany
     @JoinTable(
             name = "spotify_artist_album",
             joinColumns = @JoinColumn(name = "album_id"),

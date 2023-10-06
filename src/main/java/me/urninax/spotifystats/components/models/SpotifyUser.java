@@ -36,7 +36,7 @@ import java.util.List;
     @Column(name = "last_fetched")
     private Instant lastFetched;
 
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne
     @JoinColumn(name = "image_id", referencedColumnName = "id")
     private SpotifyImage image;
 

@@ -33,7 +33,7 @@ import java.util.Objects;
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private SpotifyUser spotifyUser;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToOne
     @JoinColumn(name = "track_id", referencedColumnName = "id")
     private SpotifyTrack track;
 

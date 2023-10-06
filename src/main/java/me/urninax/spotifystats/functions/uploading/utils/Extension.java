@@ -1,4 +1,4 @@
-package me.urninax.spotifystats.references.internal.uploading.utils;
+package me.urninax.spotifystats.functions.uploading.utils;
 
 import java.util.Optional;
 

@@ -1,6 +1,7 @@
 package me.urninax.spotifystats.spotifyauth.services;
 
 import me.urninax.spotifystats.components.models.SpotifyUser;
+import me.urninax.spotifystats.security.models.User;
 import me.urninax.spotifystats.security.services.UserDetailsImpl;
 import me.urninax.spotifystats.spotifyauth.dto.RefreshedAccessTokenDTO;
 import me.urninax.spotifystats.spotifyauth.models.SpotifyCredentials;
@@ -20,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -110,5 +112,9 @@ public class SpotifyCredentialsService{
             throw new SpotifyServerErrorException("Spotify internal error");
         }
         return response.getBody();
+    }
+
+    public Optional<SpotifyCredentials> findByUser(User user){
+        return spotifyCredentialsRepository.findByUser(user);
     }
 }

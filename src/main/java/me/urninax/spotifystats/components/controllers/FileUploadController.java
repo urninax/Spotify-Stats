@@ -2,7 +2,7 @@ package me.urninax.spotifystats.components.controllers;
 
 import lombok.AllArgsConstructor;
 import me.urninax.spotifystats.components.utils.GlobalResponse;
-import me.urninax.spotifystats.references.internal.uploading.services.FileService;
+import me.urninax.spotifystats.functions.uploading.services.FileService;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyNotConnectedException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
 import org.springframework.http.HttpStatus;

@@ -1,4 +1,4 @@
-package me.urninax.spotifystats.references.internal.uploading.services;
+package me.urninax.spotifystats.functions.uploading.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,10 +11,10 @@ import me.urninax.spotifystats.components.services.SpotifyUploadedFileService;
 import me.urninax.spotifystats.components.utils.CustomObjectMapper;
 import me.urninax.spotifystats.components.utils.SpotifyAPIRequests;
 import me.urninax.spotifystats.components.dto.SpotifyFileStreamDTO;
-import me.urninax.spotifystats.references.internal.uploading.utils.Extension;
+import me.urninax.spotifystats.functions.uploading.utils.Extension;
+import me.urninax.spotifystats.functions.uploading.exceptions.StorageException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyNotConnectedException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
-import me.urninax.spotifystats.references.internal.uploading.exceptions.StorageException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -146,7 +146,7 @@ public class FileService{
             builder.append(uniqueTrack.getSpotifyId());
             counter++;
 
-            if((counter%50 == 0) || (uniqueTracks.size() == counter)){
+            if((counter % 50 == 0) || (uniqueTracks.size() == counter)){
                 ResponseEntity<SeveralTracksDTO> response = requests.getSeveralTracks(builder.toString());
                 builder = new StringBuilder();
 

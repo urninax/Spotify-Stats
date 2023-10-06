@@ -1,4 +1,4 @@
-package me.urninax.spotifystats.references.payload.controllers;
+package me.urninax.spotifystats.functions.payload.controllers;
 
 import lombok.AllArgsConstructor;
 import me.urninax.spotifystats.spotifyauth.services.SpotifyCredentialsService;

@@ -3,6 +3,7 @@ package me.urninax.spotifystats.spotifyauth.controllers;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import me.urninax.spotifystats.components.utils.GlobalResponse;
+import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyAlreadyConnectedException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyNotConnectedException;
 import me.urninax.spotifystats.spotifyauth.utils.providers.GlobalResponseProvider;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
@@ -37,7 +38,7 @@ public class CallbackControllerAdvice{
         }
     }
 
-    @ExceptionHandler({SpotifyServerErrorException.class, SpotifyNotConnectedException.class})
+    @ExceptionHandler({SpotifyServerErrorException.class, SpotifyNotConnectedException.class, SpotifyAlreadyConnectedException.class})
     public GlobalResponse spotifyServerHandler(Exception exc, WebRequest request){
         return new GlobalResponse(Instant.now(), exc.getMessage(), request.getDescription(false).substring(4));
     }

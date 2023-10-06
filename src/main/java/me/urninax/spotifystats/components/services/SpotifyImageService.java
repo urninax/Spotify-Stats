@@ -22,4 +22,9 @@ public class SpotifyImageService{
     public Optional<SpotifyImage> findByHash(String hash){
         return spotifyImageRepository.findSpotifyImageByHash(hash);
     }
+
+    @Transactional
+    public SpotifyImage save(SpotifyImage spotifyImage){
+        return spotifyImageRepository.save(spotifyImage);
+    }
 }
