@@ -8,7 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Entity
-@Table(name = "spotify_image")
+@Table(name = "spotify_image",
+    indexes = {@Index(columnList = "hash", name = "image_hash_index", unique = true)})
 @NoArgsConstructor
 @Data public class SpotifyImage{
     @Id

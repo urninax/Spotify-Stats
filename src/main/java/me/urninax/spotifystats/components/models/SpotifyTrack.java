@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "spotify_track")
+@Table(name = "spotify_track",
+        indexes = {@Index(columnList = "spotify_id", name = "track_spotify_id_index", unique = true)})
 @NoArgsConstructor
 @Data public class SpotifyTrack{
 

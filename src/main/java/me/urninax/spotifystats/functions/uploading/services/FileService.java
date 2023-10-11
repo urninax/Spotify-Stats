@@ -2,17 +2,17 @@ package me.urninax.spotifystats.functions.uploading.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.urninax.spotifystats.components.dto.SpotifyFileStreamDTO;
 import me.urninax.spotifystats.components.dto.SpotifyTrackDTO;
 import me.urninax.spotifystats.components.dto.additional.SeveralTracksDTO;
 import me.urninax.spotifystats.components.models.SpotifyFileStream;
 import me.urninax.spotifystats.components.models.SpotifyTrack;
-import me.urninax.spotifystats.components.services.SpotifyTrackService;
+import me.urninax.spotifystats.components.services.SpotifyFileStreamService;
 import me.urninax.spotifystats.components.services.SpotifyUploadedFileService;
 import me.urninax.spotifystats.components.utils.CustomObjectMapper;
 import me.urninax.spotifystats.components.utils.SpotifyAPIRequests;
-import me.urninax.spotifystats.components.dto.SpotifyFileStreamDTO;
-import me.urninax.spotifystats.functions.uploading.utils.Extension;
 import me.urninax.spotifystats.functions.uploading.exceptions.StorageException;
+import me.urninax.spotifystats.functions.uploading.utils.Extension;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyNotConnectedException;
 import me.urninax.spotifystats.spotifyauth.utils.exceptions.SpotifyServerErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -32,15 +35,15 @@ public class FileService{
     private final CustomObjectMapper customMapper;
     private final SpotifyAPIRequests requests;
     private final SpotifyUploadedFileService uploadedFileService;
-    private final SpotifyTrackService spotifyTrackService;
+    private final SpotifyFileStreamService fileStreamService;
 
     @Autowired
-    public FileService(ObjectMapper mapper, CustomObjectMapper customMapper, SpotifyAPIRequests requests, SpotifyUploadedFileService uploadedFileService, SpotifyTrackService spotifyTrackService){
+    public FileService(ObjectMapper mapper, CustomObjectMapper customMapper, SpotifyAPIRequests requests, SpotifyUploadedFileService uploadedFileService, SpotifyFileStreamService fileStreamService){
         this.mapper = mapper;
         this.customMapper = customMapper;
         this.requests = requests;
         this.uploadedFileService = uploadedFileService;
-        this.spotifyTrackService = spotifyTrackService;
+        this.fileStreamService = fileStreamService;
     }
 
     //TODO: make method Async
@@ -107,38 +110,41 @@ public class FileService{
     private void resolveJson(String json, String filename) throws SpotifyNotConnectedException, SpotifyServerErrorException{
         try{
             SpotifyFileStreamDTO[] entities = mapper.readValue(json, SpotifyFileStreamDTO[].class);
-            List<SpotifyFileStream> streams = new LinkedList<>(); //all streams
+           // List<SpotifyFileStream> streams = new LinkedList<>(); //all streams
+            HashSet<SpotifyFileStream> uniqueStreams = new HashSet<>();
             HashSet<SpotifyTrack> uniqueTracks = new HashSet<>();
 
             for(SpotifyFileStreamDTO dto : entities){
                 if(dto.getSpotifyTrackUri() != null){
                     SpotifyFileStream fileStream = customMapper.spotifyFileStreamDTOtoEntity(dto);
-                    streams.add(fileStream);
+
+                    Optional<SpotifyFileStream> streamFromDBOptional = fileStreamService.findByUsernameAndPlayedAt(
+                            fileStream.getUsername(), fileStream.getPlayedAt());
+
+                    if(streamFromDBOptional.isEmpty()){
+                        uniqueStreams.add(fileStream);
+                    }
                     uniqueTracks.add(new SpotifyTrack(fileStream.getSpotifyId()));
                 }
             }
 
-            HashMap<SpotifyTrack, List<SpotifyFileStream>> tracksStreams = getTracks(uniqueTracks);
+            List<SpotifyTrack> tracksFromStreams = getTracks(uniqueTracks);
 
-            for(SpotifyFileStream stream : streams){
+            for(SpotifyFileStream stream : uniqueStreams){
                 SpotifyTrack streamSpotifyTrack = new SpotifyTrack(stream.getSpotifyId());
-                tracksStreams.get(streamSpotifyTrack).add(stream);
+                stream.setTrack(tracksFromStreams.get(tracksFromStreams.indexOf(streamSpotifyTrack)));
+                fileStreamService.batchSave(uniqueStreams);
             }
 
-            for(Map.Entry<SpotifyTrack, List<SpotifyFileStream>> entry : tracksStreams.entrySet()){
-                SpotifyTrack spotifyTrack = entry.getKey();
-                spotifyTrack.getFileStreams().addAll(entry.getValue());
-                spotifyTrackService.save(spotifyTrack);
-            }
-            uploadedFileService.save(filename, streams.size());
+            uploadedFileService.save(filename, uniqueStreams.size());
 
         }catch(JsonProcessingException e){
             throw new RuntimeException(e); //modified file
         }
     }
 
-    private HashMap<SpotifyTrack, List<SpotifyFileStream>> getTracks(HashSet<SpotifyTrack> uniqueTracks) throws SpotifyNotConnectedException, SpotifyServerErrorException{
-        HashMap<SpotifyTrack, List<SpotifyFileStream>> allTracks = new HashMap<>();
+    private List<SpotifyTrack> getTracks(HashSet<SpotifyTrack> uniqueTracks) throws SpotifyNotConnectedException, SpotifyServerErrorException{
+        List<SpotifyTrack> allTracks = new ArrayList<>();
         int counter = 0;
         StringBuilder builder = new StringBuilder();
         for(SpotifyTrack uniqueTrack : uniqueTracks){
@@ -154,7 +160,8 @@ public class FileService{
 
                     for(SpotifyTrackDTO dto : severalTracks){
                         System.out.println(dto.getName());
-                        allTracks.put(customMapper.spotifyTrackDTOtoEntity(dto), new LinkedList<>());
+                        allTracks.add(customMapper.spotifyTrackDTOtoEntity(dto));
+                       // allTracks.put(customMapper.spotifyTrackDTOtoEntity(dto), new LinkedList<>());
                     }
                 }else{
                     throw new SpotifyServerErrorException("Spotify server error");

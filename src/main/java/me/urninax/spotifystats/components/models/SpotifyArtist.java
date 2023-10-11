@@ -8,7 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Entity
-@Table(name = "spotify_artist")
+@Table(name = "spotify_artist",
+        indexes = {@Index(columnList = "spotify_id", name = "artist_spotify_id_index", unique = true)})
 @NoArgsConstructor
 @Data public class SpotifyArtist{
     @Id
