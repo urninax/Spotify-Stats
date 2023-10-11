@@ -42,11 +42,11 @@ import java.util.Objects;
         if(this == o) return true;
         if(o == null || getClass() != o.getClass()) return false;
         SpotifyFileStream that = (SpotifyFileStream) o;
-        return Objects.equals(spotifyId, that.spotifyId);
+        return Objects.equals(username, that.username) && Objects.equals(spotifyId, that.spotifyId) && Objects.equals(playedAt, that.playedAt);
     }
 
     @Override
     public int hashCode(){
-        return Objects.hash(spotifyId);
+        return Objects.hash(username, spotifyId, playedAt);
     }
 }
