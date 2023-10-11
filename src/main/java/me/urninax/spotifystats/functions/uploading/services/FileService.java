@@ -97,7 +97,6 @@ public class FileService{
             String json = new String(file.getBytes(), StandardCharsets.UTF_8);
             String filename = file.getOriginalFilename();
 
-
             resolveJson(json, filename);
         }catch(IOException e){
             throw new StorageException("Failed to store file.");
