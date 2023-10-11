@@ -7,7 +7,8 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity
-@Table(name = "spotify_file_stream")
+@Table(name = "spotify_file_stream",
+        indexes = {@Index(name = "file_stream_username_played_at_spotify_id_index", columnList = "username, played_at, spotify_id")})
 @Data public class SpotifyFileStream{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

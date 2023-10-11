@@ -25,8 +25,8 @@ public class SpotifyFileStreamService{
         this.spotifyCredentialsService = spotifyCredentialsService;
     }
 
-    public Optional<SpotifyFileStream> findByUsernameAndPlayedAt(String username, Instant playedAt){
-        return fileStreamRepository.findByUsernameAndPlayedAt(username, playedAt);
+    public Optional<SpotifyFileStream> findByUsernameAndPlayedAt(String username, Instant playedAt, String spotifyId){
+        return fileStreamRepository.findByUsernameAndPlayedAtAndSpotifyId(username, playedAt, spotifyId);
     }
 
     @Transactional

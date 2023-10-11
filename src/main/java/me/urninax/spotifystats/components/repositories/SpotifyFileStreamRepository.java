@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface SpotifyFileStreamRepository extends JpaRepository<SpotifyFileStream, Long>{
-    Optional<SpotifyFileStream> findByUsernameAndPlayedAt(String username, Instant playedAt);
+    Optional<SpotifyFileStream> findByUsernameAndPlayedAtAndSpotifyId(String username, Instant playedAt, String spotifyId);
 }

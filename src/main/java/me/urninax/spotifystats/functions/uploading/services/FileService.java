@@ -119,9 +119,9 @@ public class FileService{
                     SpotifyFileStream fileStream = customMapper.spotifyFileStreamDTOtoEntity(dto);
 
                     Optional<SpotifyFileStream> streamFromDBOptional = fileStreamService.findByUsernameAndPlayedAt(
-                            fileStream.getUsername(), fileStream.getPlayedAt());
+                            fileStream.getUsername(), fileStream.getPlayedAt(), fileStream.getSpotifyId());
 
-                    if(streamFromDBOptional.isEmpty()){
+                    if(streamFromDBOptional.isEmpty() && fileStream.getMsPlayed()<=30000){ //check whether stream exists in database and was played for more than 30 seconds
                         uniqueStreams.add(fileStream);
                     }
                     uniqueTracks.add(new SpotifyTrack(fileStream.getSpotifyId()));
@@ -133,9 +133,8 @@ public class FileService{
             for(SpotifyFileStream stream : uniqueStreams){
                 SpotifyTrack streamSpotifyTrack = new SpotifyTrack(stream.getSpotifyId());
                 stream.setTrack(tracksFromStreams.get(tracksFromStreams.indexOf(streamSpotifyTrack)));
-                fileStreamService.batchSave(uniqueStreams);
             }
-
+            fileStreamService.batchSave(uniqueStreams);
             uploadedFileService.save(filename, uniqueStreams.size());
 
         }catch(JsonProcessingException e){
@@ -145,29 +144,31 @@ public class FileService{
 
     private List<SpotifyTrack> getTracks(HashSet<SpotifyTrack> uniqueTracks) throws SpotifyNotConnectedException, SpotifyServerErrorException{
         List<SpotifyTrack> allTracks = new ArrayList<>();
+        StringBuilder trackIds = new StringBuilder();
+
         int counter = 0;
-        StringBuilder builder = new StringBuilder();
+
         for(SpotifyTrack uniqueTrack : uniqueTracks){
-            builder.append(uniqueTrack.getSpotifyId());
+            trackIds.append(uniqueTrack.getSpotifyId());
             counter++;
 
             if((counter % 50 == 0) || (uniqueTracks.size() == counter)){
-                ResponseEntity<SeveralTracksDTO> response = requests.getSeveralTracks(builder.toString());
-                builder = new StringBuilder();
+                ResponseEntity<SeveralTracksDTO> response = requests.getSeveralTracks(trackIds.toString());
+                trackIds = new StringBuilder();
 
                 if(response.getBody() != null){
                     List<SpotifyTrackDTO> severalTracks = response.getBody().getTracks();
 
-                    for(SpotifyTrackDTO dto : severalTracks){
-                        System.out.println(dto.getName());
-                        allTracks.add(customMapper.spotifyTrackDTOtoEntity(dto));
+                    for(SpotifyTrackDTO trackDTO : severalTracks){
+                        System.out.println(trackDTO.getName());
+                        allTracks.add(customMapper.spotifyTrackDTOtoEntity(trackDTO));
                        // allTracks.put(customMapper.spotifyTrackDTOtoEntity(dto), new LinkedList<>());
                     }
                 }else{
                     throw new SpotifyServerErrorException("Spotify server error");
                 }
             }else{
-                builder.append(",");
+                trackIds.append(",");
             }
         }
 
